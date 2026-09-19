@@ -47,7 +47,7 @@ export default function Home(){
    const grouped:any={};(cq.data||[]).forEach((x:any)=>{(grouped[x.question_id] ||= []).push({id:x.id,choice_text:x.choice_text,is_correct:x.is_correct,choice_order:x.choice_order})});
    setQuestions((qq.data||[]).map((x:any)=>({...x,question_choices:grouped[x.id]||[]})));
  };
- const openAIGenerator=()=>{setAiTopic("");setAiCount("5");setAiType("multiple_choice");setAiDifficulty("medium");setAiBank(banks[0]?.id||"");setAiOpen(true)};
+ const openAIGenerator=()=>{setError("");setMessage("");setAiTopic("");setAiCount("5");setAiType("multiple_choice");setAiDifficulty("medium");setAiBank(banks[0]?.id||"");setAiOpen(true)};
  const generateAIQuestions=async()=>{
    setError("");setMessage("");
    if(!aiTopic.trim()){setError("موضوع الأسئلة مطلوب.");return}
