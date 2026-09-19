@@ -43,7 +43,19 @@ export default function Home(){
    if(bq.error){setError(bq.error.message);return}
    if(qq.error){setError(qq.error.message);return}
    if(cq.error){setError(cq.error.message);return}
-   setBanks(bq.data||[]);
+   let bankData=bq.data||[];
+   if(bankData.length===0){
+     const {data:{user}}=await supabase.auth.getUser();
+     const {data:createdBank,error:createError}=await supabase.from("question_banks").insert({
+       name:"البنك الافتراضي لاختبارات المتدربين",
+       description:"بنك أسئلة افتراضي يتم إنشاؤه تلقائيًا عند أول تشغيل للنظام، ويمكن تعديله أو حذفه لاحقًا.",
+       created_by:user?.id||null
+     }).select("id,name,description,category_id").single();
+     if(createError){setError(createError.message);return}
+     bankData=createdBank?[createdBank]:[];
+     setMessage("تم إنشاء بنك الأسئلة الافتراضي تلقائيًا.");
+   }
+   setBanks(bankData);
    const grouped:any={};(cq.data||[]).forEach((x:any)=>{(grouped[x.question_id] ||= []).push({id:x.id,choice_text:x.choice_text,is_correct:x.is_correct,choice_order:x.choice_order})});
    setQuestions((qq.data||[]).map((x:any)=>({...x,question_choices:grouped[x.id]||[]})));
  };
