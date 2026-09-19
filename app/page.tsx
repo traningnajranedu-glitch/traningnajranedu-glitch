@@ -36,14 +36,17 @@ export default function Home(){
  const removeTrainee=async(id:string)=>{if(!confirm("هل تريد حذف هذا المتدرب؟"))return;const {error}=await supabase.from("trainees").delete().eq("id",id);if(error){setError(error.message);return}await loadTrainees();setMessage("تم حذف المتدرب.")};
  const toggleActive=async(t:Trainee)=>{const {error}=await supabase.from("trainees").update({active:!t.active}).eq("id",t.id);if(error){setError(error.message);return}await loadTrainees()};
  const loadQuestionData=async()=>{
-   const [bq,qq,cq]=await Promise.all([
+   const [bq,qq,cq,eq]=await Promise.all([
      supabase.from("question_banks").select("id,name,description,category_id").order("name"),
      supabase.from("questions").select("id,bank_id,question_text,question_type,difficulty,explanation,points,status,ai_generated,approved_by,approved_at").order("created_at",{ascending:false}),
-     supabase.from("question_choices").select("id,question_id,choice_text,is_correct,choice_order").order("choice_order")
+     supabase.from("question_choices").select("id,question_id,choice_text,is_correct,choice_order").order("choice_order"),
+     supabase.from("exams").select("id,title,description,instructions,duration_minutes,total_questions,pass_score,shuffle_questions,shuffle_choices,max_attempts,starts_at,ends_at,status,created_at").order("created_at",{ascending:false})
    ]);
    if(bq.error){setError(bq.error.message);return}
    if(qq.error){setError(qq.error.message);return}
    if(cq.error){setError(cq.error.message);return}
+   if(eq.error){setError(eq.error.message);return}
+   setExams(eq.data||[]);
    let bankData=bq.data||[];
    if(bankData.length===0){
      const {data:{user}}=await supabase.auth.getUser();
