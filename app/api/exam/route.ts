@@ -61,7 +61,7 @@ export async function POST(request:NextRequest){
       const {data:choices}=await supabase.from("question_choices").select("id,question_id,is_correct").in("question_id",qids);
       let score=0,total=0; const rows=[];
       for(const q of (aq||[])){const pts=Number(q.points)||1;total+=pts;const ans=answers.find((a:any)=>a.question_id===q.question_id);const selected=String(ans?.choice_id||"");const correct=(choices||[]).some((c:any)=>c.question_id===q.question_id&&c.id===selected&&c.is_correct);if(correct)score+=pts;rows.push({attempt_question_id:q.id,selected_choice_id:selected||null,is_correct:correct,points_awarded:correct?pts:0});}
-      await supabase.from("attempt_answers").delete().eq("attempt_id",attemptId); const {error:insError}=await supabase.from("attempt_answers").insert(rows); if(insError)return NextResponse.json({error:insError.message},{status:500});
+      const aqIds=(aq||[]).map((x:any)=>x.id); if(aqIds.length){const {error:delError}=await supabase.from("attempt_answers").delete().in("attempt_question_id",aqIds);if(delError)return NextResponse.json({error:delError.message},{status:500});} const {error:insError}=await supabase.from("attempt_answers").insert(rows); if(insError)return NextResponse.json({error:insError.message},{status:500});
       const percentage=total?Math.round(score/total*10000)/100:0; const passScore=Number(attempt.exams?.pass_score??60); const passed=percentage>=passScore;
       const {error:uError}=await supabase.from("attempts").update({submitted_at:now.toISOString(),status:expired?"expired":"submitted",score,percentage,passed}).eq("id",attemptId);
       if(uError)return NextResponse.json({error:uError.message},{status:500});
