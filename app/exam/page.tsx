@@ -12,5 +12,45 @@ export default function ExamPage(){
  const fmt=(s:number)=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
  if(result)return <main className="examScreen"><div className="examCard resultCard"><div className="examLogo">✓</div><h1>نتيجة الاختبار</h1><p>{result.trainee?.full_name}</p><div className="resultScore">{result.percentage}%</div><h2>{result.passed?"اجتاز الاختبار":"لم يجتز الاختبار"}</h2><p>الدرجة: {result.score} من {result.total} · درجة النجاح: {result.pass_score}%</p><button className="primary" onClick={()=>{setResult(null);setTrainee(null);setExams([]);setCivil("")}}>العودة للتحقق</button></div></main>;
  if(attempt)return <main className="examScreen"><div className="examCard examRun"><div className="examRunHead"><div><h1>{selected.title}</h1><p>{trainee?.full_name} · المحاولة {attempt.attempt_number}</p></div><div className={seconds<60?"timer dangerTimer":"timer"}>⏱ {fmt(seconds)}</div></div>{selected.instructions&&<div className="examInstructions">{selected.instructions}</div>}<div className="runQuestions">{questions.map((q,i)=><div className="runQuestion" key={q.id}><div className="questionNumber">السؤال {i+1} من {questions.length}</div><h2>{q.question_text}</h2><div className="runChoices">{q.choices.map(c=><label key={c.id} className={answers[q.id]===c.id?"runChoice selectedChoice":"runChoice"}><input type="radio" name={q.id} checked={answers[q.id]===c.id} onChange={()=>setAnswers({...answers,[q.id]:c.id})}/><span>{c.choice_text}</span></label>)}</div></div>)}</div><button className="primary full" onClick={()=>{if(confirm("هل أنت متأكد من تسليم الاختبار؟"))submit(false)}} disabled={submitting}>{submitting?"جاري التصحيح...":"تسليم الاختبار"}</button></div></main>;
- return <main className="examScreen"><div className="examCard"><div className="examLogo">اختبار</div><h1>منصة اختبار المتدربين</h1><p className="examSubtitle">أدخل السجل المدني للتحقق من بياناتك والاطلاع على الاختبارات المتاحة.</p><label className="examLabel">السجل المدني<input inputMode="numeric" maxLength={10} value={civil} onChange={e=>setCivil(e.target.value.replace(/\D/g,""))} placeholder="10 أرقام"/></label><button className="primary full" onClick={verify} disabled={loading||civil.length!==10}>{loading?"جاري التحقق...":"تحقق وابدأ"}</button>{error&&<div className="error">{error}</div>}{trainee&&<div className="traineeWelcome"><b>مرحبًا {trainee.full_name}</b><span>{trainee.civil_id}</span></div>}{trainee&&<div className="availableExams"><h2>الاختبارات المتاحة</h2>{exams.length===0?<div className="empty">لا توجد اختبارات منشورة ومتاحة حاليًا.</div>:exams.map(ex=><div className="availableExam" key={ex.id}><div><b>{ex.title}</b><small>{ex.total_questions} سؤال · {ex.duration_minutes} دقيقة · النجاح {ex.pass_score}% · المحاولات {ex.attempts_used}/{ex.max_attempts}</small>{ex.description&&<small>{ex.description}</small>}</div><button className="primary" onClick={()=>start(ex)} disabled={!ex.can_attempt||loading}>{ex.can_attempt?"بدء الاختبار":"انتهت المحاولات"}</button></div>)}</div>}</div></main>;
+ return <main className="examScreen nationalDayScreen" dir="rtl">
+  <div className="nationalDayGlow nationalDayGlowOne"></div>
+  <div className="nationalDayGlow nationalDayGlowTwo"></div>
+  <div className="examCard nationalDayCard">
+    <div className="nationalDayBanner">
+      <div className="nationalDayPattern"></div>
+      <div className="nationalDayBadge"><span>96</span><small>اليوم الوطني</small></div>
+      <div className="nationalDayBannerText">
+        <strong>اليوم الوطني السعودي 96</strong>
+        <span>عزّنا بطبعنا</span>
+      </div>
+    </div>
+    <div className="examLogo nationalExamLogo"><span>اختبار</span><b>🇸🇦</b></div>
+    <div className="nationalDayTitle">
+      <span className="eyebrow">منصة الاختبارات الإلكترونية</span>
+      <h1>منصة اختبار المتدربين</h1>
+      <p>الأمن العام</p>
+    </div>
+    <div className="loginWelcome">
+      <div className="loginWelcomeIcon">✓</div>
+      <div>
+        <strong>دخول المتدرب / المختبر</strong>
+        <span>أدخل رقم السجل المدني للتحقق من بياناتك والاطلاع على الاختبارات المتاحة.</span>
+      </div>
+    </div>
+    <label className="examLabel nationalExamLabel">السجل المدني
+      <input inputMode="numeric" maxLength={10} value={civil} onChange={e=>setCivil(e.target.value.replace(/\D/g,""))} placeholder="أدخل رقم السجل المدني — 10 أرقام"/>
+    </label>
+    <button className="primary full nationalPrimary" onClick={verify} disabled={loading||civil.length!==10}>
+      <span>{loading?"جاري التحقق...":"تحقق وابدأ الاختبار"}</span>
+      {!loading&&<span className="buttonArrow">←</span>}
+    </button>
+    {error&&<div className="error nationalError">{error}</div>}
+    <div className="nationalDayValues">
+      <span>🇸🇦 اعتزاز بالوطن</span><span>•</span><span>96 عامًا من المجد</span><span>•</span><span>عزّنا بطبعنا</span>
+    </div>
+    {trainee&&<div className="traineeWelcome nationalTraineeWelcome"><div><b>مرحبًا {trainee.full_name}</b><span>{trainee.civil_id}</span></div><span className="verifiedMark">✓ تم التحقق</span></div>}
+    {trainee&&<div className="availableExams nationalAvailableExams"><h2>الاختبارات المتاحة</h2>{exams.length===0?<div className="empty">لا توجد اختبارات منشورة ومتاحة حاليًا.</div>:exams.map(ex=><div className="availableExam" key={ex.id}><div><b>{ex.title}</b><small>{ex.total_questions} سؤال · {ex.duration_minutes} دقيقة · النجاح {ex.pass_score}% · المحاولات {ex.attempts_used}/{ex.max_attempts}</small>{ex.description&&<small>{ex.description}</small>}</div><button className="primary nationalPrimary smallPrimary" onClick={()=>start(ex)} disabled={!ex.can_attempt||loading}>{ex.can_attempt?"بدء الاختبار":"انتهت المحاولات"}</button></div>)}</div>}
+    <div className="nationalDayFooter"><span>المملكة العربية السعودية</span><span className="footerTree">✦</span><span>التعلم والإنجاز</span></div>
+  </div>
+</main>;
 }
