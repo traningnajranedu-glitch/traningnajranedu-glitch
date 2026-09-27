@@ -63,9 +63,26 @@ export async function GET(request: NextRequest) {
     }
     const admin=await adminUser(request);
     if(!admin) return NextResponse.json({error:"غير مصرح."},{status:401});
-    const {data,error}=await sb.from("research_submissions").select("*,research_topics(title),trainees(full_name,civil_id)").order("created_at",{ascending:false});
+    // تحميل الأبحاث مع بيانات المتدرب والعنوان عبر استعلامات منفصلة لضمان ظهورها
+    // في لوحة المدير حتى لو لم يتعرف PostgREST على العلاقات المتداخلة.
+    const {data:rows,error}=await sb.from("research_submissions").select("*").order("created_at",{ascending:false});
     if(error) throw error;
-    return NextResponse.json({submissions:data||[]});
+    const traineeIds=[...new Set((rows||[]).map((x:any)=>x.trainee_id).filter(Boolean))];
+    const topicIds=[...new Set((rows||[]).map((x:any)=>x.topic_id).filter(Boolean))];
+    const [{data:trainees,error:te},{data:topics,error:toe}]=await Promise.all([
+      traineeIds.length?sb.from("trainees").select("id,full_name,civil_id").in("id",traineeIds):Promise.resolve({data:[],error:null} as any),
+      topicIds.length?sb.from("research_topics").select("id,title").in("id",topicIds):Promise.resolve({data:[],error:null} as any)
+    ]);
+    if(te) throw te;
+    if(toe) throw toe;
+    const tm=new Map((trainees||[]).map((x:any)=>[x.id,x]));
+    const om=new Map((topics||[]).map((x:any)=>[x.id,x]));
+    const submissions=(rows||[]).map((x:any)=>({
+      ...x,
+      trainees:tm.get(x.trainee_id)||null,
+      research_topics:om.get(x.topic_id)||null
+    }));
+    return NextResponse.json({submissions});
   } catch(e:any) { return NextResponse.json({error:e.message||"حدث خطأ."},{status:500}); }
 }
 
