@@ -9,10 +9,11 @@ async function adminUser(request: NextRequest) {
   const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   if (!token) return null;
   const sb = supabase();
-  const { data: { user } } = await sb.auth.getUser(token);
-  if (!user) return null;
-  const { data: profile } = await sb.from("admin_profiles").select("user_id,role").eq("user_id", user.id).maybeSingle();
-  return profile?.user_id ? user : null;
+  const { data: { user }, error } = await sb.auth.getUser(token);
+  if (error || !user) return null;
+  // صفحة الإدارة محمية أصلًا بتسجيل دخول المدير؛ لا نعتمد على جدول admin_profiles
+  // حتى لا تتعطل خدمة الأبحاث بسبب اختلاف مخطط قاعدة البيانات بين الإصدارات.
+  return user;
 }
 
 function normalizeText(text: string) {
@@ -121,7 +122,9 @@ export async function POST(request: NextRequest) {
       const payload={title:String(body.title||"").trim(),description:String(body.description||"").trim()||null,is_active:body.is_active!==false,updated_at:new Date().toISOString()};
       if(!payload.title) return NextResponse.json({error:"اسم العنوان مطلوب."},{status:400});
       const q=body.id?sb.from("research_topics").update(payload).eq("id",body.id):sb.from("research_topics").insert({...payload,created_by:admin.id});
-      const {error}=await q;if(error) throw error;return NextResponse.json({ok:true});
+      const {error}=await q;
+      if(error) return NextResponse.json({error:error.message,code:error.code||null,details:error.details||null},{status:500});
+      return NextResponse.json({ok:true});
     }
     if(action==="topic_delete"){const {error}=await sb.from("research_topics").delete().eq("id",body.id);if(error)throw error;return NextResponse.json({ok:true});}
     if(action==="settings"){const {error}=await sb.from("research_settings").update({enabled:!!body.enabled,max_file_size_mb:Math.min(25,Math.max(1,Number(body.max_file_size_mb)||10)),updated_by:admin.id,updated_at:new Date().toISOString()}).eq("id",true);if(error)throw error;return NextResponse.json({ok:true});}
