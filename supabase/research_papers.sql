@@ -51,10 +51,6 @@ drop policy if exists "research topics active read" on public.research_topics;
 create policy "research topics active read" on public.research_topics
 for select to anon, authenticated using (is_active=true);
 
-drop policy if exists "research submissions read" on public.research_submissions;
-create policy "research submissions read" on public.research_submissions
-for select to authenticated using (true);
-
 drop policy if exists "research settings read" on public.research_settings;
 create policy "research settings read" on public.research_settings
 for select to anon, authenticated using (true);
