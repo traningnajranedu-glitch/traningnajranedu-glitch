@@ -88,8 +88,9 @@ export async function POST(request: NextRequest) {
       const {data:topic}=await sb.from("research_topics").select("id,title").eq("id",topicId).eq("is_active",true).single();
       if(!topic) return NextResponse.json({error:"عنوان البحث غير متاح."},{status:404});
       const bytes=Buffer.from(await file.arrayBuffer());
+      const { CanvasFactory } = await import("pdf-parse/worker");
       const { PDFParse } = await import("pdf-parse");
-      const parser=new PDFParse({data:bytes});
+      const parser=new PDFParse({data:bytes,CanvasFactory});
       const parsed=await parser.getText(); await parser.destroy();
       const text=normalizeText(parsed.text||"");
       if(text.length<100) return NextResponse.json({error:"تعذر استخراج نص كافٍ من ملف PDF. تأكد أن الملف يحتوي نصًا قابلًا للبحث وليس صورًا ممسوحة فقط."},{status:400});
