@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       const rates=(others||[]).map((x:any)=>similarity(text,x.extracted_text||"")).filter((n:number)=>n>0);
       const plagiarism=rates.length?Math.round(Math.max(...rates)*10)/10:0;
       const summary=plagiarism? "هذه نسبة تشابه نصي تقديرية مع أبحاث أخرى محفوظة في المنصة، وليست تقريرًا معتمدًا من Turnitin أو خدمة خارجية.": "لم يظهر تشابه نصي مرتفع مع الأبحاث السابقة المحفوظة في المنصة.";
-      const path=`${trainee.id}/${Date.now()}-${file.name.replace(/[^\w\-.\u0600-\u06ff ]/g,"_")}`;
+      const path=`${trainee.id}/${crypto.randomUUID()}.pdf`;
       const up=await sb.storage.from("research-papers").upload(path,bytes,{contentType:"application/pdf",upsert:false});
       if(up.error) throw up.error;
       const ins=await sb.from("research_submissions").insert({trainee_id:trainee.id,topic_id:topicId,file_name:file.name,file_path:path,file_size:file.size,mime_type:"application/pdf",extracted_text:text,status:"plagiarism_checked",plagiarism_percent:plagiarism,plagiarism_summary:summary}).select("id,status,plagiarism_percent,plagiarism_summary").single();
