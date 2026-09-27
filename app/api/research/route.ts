@@ -102,6 +102,8 @@ export async function POST(request: NextRequest) {
       if(file.size>max) return NextResponse.json({error:`حجم الملف يتجاوز الحد المسموح ${settings.max_file_size_mb} MB.`},{status:400});
       const {data:trainee}=await sb.from("trainees").select("id,full_name,civil_id,active").eq("civil_id",civil).eq("active",true).maybeSingle();
       if(!trainee) return NextResponse.json({error:"المتدرب غير موجود أو غير نشط."},{status:404});
+      const {data:existing}=await sb.from("research_submissions").select("id,status").eq("trainee_id",trainee.id).limit(1).maybeSingle();
+      if(existing) return NextResponse.json({error:"تم إرسال البحث مسبقًا، ولا يسمح بإعادة إرسال بحث آخر لنفس المتدرب."},{status:409});
       const {data:topic}=await sb.from("research_topics").select("id,title").eq("id",topicId).eq("is_active",true).single();
       if(!topic) return NextResponse.json({error:"عنوان البحث غير متاح."},{status:404});
       const bytes=Buffer.from(await file.arrayBuffer());
