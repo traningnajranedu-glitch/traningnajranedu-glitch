@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { PDFParse } from "pdf-parse";
 
 export const runtime = "nodejs";
 const supabase = () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -89,6 +88,7 @@ export async function POST(request: NextRequest) {
       const {data:topic}=await sb.from("research_topics").select("id,title").eq("id",topicId).eq("is_active",true).single();
       if(!topic) return NextResponse.json({error:"عنوان البحث غير متاح."},{status:404});
       const bytes=Buffer.from(await file.arrayBuffer());
+      const { PDFParse } = await import("pdf-parse");
       const parser=new PDFParse({data:bytes});
       const parsed=await parser.getText(); await parser.destroy();
       const text=normalizeText(parsed.text||"");
