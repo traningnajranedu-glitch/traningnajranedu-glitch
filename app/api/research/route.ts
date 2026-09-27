@@ -55,6 +55,10 @@ ${clipped}`;
 export async function GET(request: NextRequest) {
   try {
     const sb=supabase(), action=request.nextUrl.searchParams.get("action")||"topics";
+    if(action==="submissions") {
+      const admin=await adminUser(request);
+      if(!admin) return NextResponse.json({error:"غير مصرح."},{status:401});
+    }
     if(action==="topics") {
       const {data:settings}=await sb.from("research_settings").select("enabled,max_file_size_mb").eq("id",true).maybeSingle();
       const {data:topics,error}=await sb.from("research_topics").select("id,title,description,is_active").eq("is_active",true).order("title");
