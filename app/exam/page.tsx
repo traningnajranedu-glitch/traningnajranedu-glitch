@@ -53,7 +53,7 @@ export default function ExamPage(){
     </div>
     {trainee&&<div className="traineeWelcome nationalTraineeWelcome"><div><b>مرحبًا {trainee.full_name}</b><span>{trainee.civil_id}</span></div><span className="verifiedMark">✓ تم التحقق</span></div>}
     {trainee&&<div className="availableExams nationalAvailableExams"><h2>الاختبارات المتاحة</h2>{exams.length===0?<div className="empty">لا توجد اختبارات منشورة ومتاحة حاليًا.</div>:exams.map(ex=><div className="availableExam" key={ex.id}><div><b>{ex.title}</b><small>{ex.total_questions} سؤال · {ex.duration_minutes} دقيقة · النجاح {ex.pass_score}% · المحاولات {ex.attempts_used}/{ex.max_attempts}</small>{ex.description&&<small>{ex.description}</small>}</div><button className="primary nationalPrimary smallPrimary" onClick={()=>start(ex)} disabled={!ex.can_attempt||loading}>{ex.can_attempt?"بدء الاختبار":"انتهت المحاولات"}</button></div>)}</div>}
-    <div className="nationalDayFooter"><span>المملكة العربية السعودية</span><span className="footerTree">✦</span><span>التعلم والإنجاز</span></div>
+    <div className="nationalDayFooter"><span>المملكة العربية السعودية</span><span className="footerTree">✦</span><a href="/research" style={{color:"inherit",fontWeight:800,textDecoration:"none"}}>إرفاق البحث العلمي</a><span className="footerTree">✦</span><span>التعلم والإنجاز</span></div>
   </div>
 </main>;
 }
