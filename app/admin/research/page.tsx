@@ -4,7 +4,7 @@ import {createClient} from "@supabase/supabase-js";
 const sb=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
 export default function AdminResearch(){
  const [topics,setTopics]=useState<any[]>([]),[subs,setSubs]=useState<any[]>([]),[enabled,setEnabled]=useState(false),[max,setMax]=useState(10),[title,setTitle]=useState(""),[desc,setDesc]=useState(""),[edit,setEdit]=useState<any>(null),[busy,setBusy]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState("");
- const headers=async()=>{const {data:{session}}=await sb.auth.getSession();return session?.access_token?{Authorization:"Bearer "+session.access_token}:{}};
+ const headers=async():Promise<Record<string,string>>=>{const {data:{session}}=await sb.auth.getSession();return session?.access_token?{Authorization:"Bearer "+session.access_token}:{}};
  const load=async()=>{const h=await headers();const r=await fetch("/api/research",{headers:h});const d=await r.json();if(!r.ok){setError(d.error);return}setSubs(d.submissions||[]);const t=await fetch("/api/research?action=topics");const td=await t.json();setTopics(td.topics||[]);setEnabled(td.enabled);setMax(td.max_file_size_mb||10)};
  useEffect(()=>{load()},[]);
  const saveTopic=async()=>{if(!title.trim())return;setBusy(true);const h=await headers();const r=await fetch("/api/research",{method:"POST",headers:{"Content-Type":"application/json",...h},body:JSON.stringify({action:"topic_save",id:edit?.id,title,description:desc,is_active:true})});const d=await r.json();if(!r.ok)setError(d.error);else{setTitle("");setDesc("");setEdit(null);setMessage("تم حفظ عنوان البحث.");await load()}setBusy(false)};
